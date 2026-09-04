@@ -1,6 +1,6 @@
 public class Cliente {
 
-  //Atributos clientes
+    //Atributos clientes
 
     private String cedula;
     private String nombre;
@@ -42,8 +42,9 @@ public class Cliente {
             this.saldoDisponible = saldoDisponible;
         } else {
             System.out.println("Error ... El saldo no puede ser negativo .... ");
+        }
     }
-    }
+
     public boolean getActivo() {
         return activo;
     }
@@ -52,8 +53,28 @@ public class Cliente {
         this.activo = activo;
     }
 
+    public void descontarSaldo(double monto) {
 
+        if (!this.activo) {
+            System.out.println("Error: El cliente está inactivo. No puede realizar compras.");
+            return;
+        } else if (monto <= 0) {
+            System.out.println("Error: El monto a descontar debe ser mayor a 0.");
+        } else if (monto > this.saldoDisponible) {
+            System.out.println("Error: Saldo insuficiente. Saldo actual: $" + this.saldoDisponible);
+
+        } else {
+            this.saldoDisponible -= monto;
+            System.out.println("Pago exitoso. Saldo restante: $" + this.saldoDisponible);
+
+        }
+
+
+    }
 }
+
+
+
 
 
 
