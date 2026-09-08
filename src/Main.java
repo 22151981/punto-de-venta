@@ -1,30 +1,27 @@
 public class Main {
     public static void main(String[] args) {
 
-        // 1. Instanciamos los dos objetos
+        // 1. Instancias base
         Producto agua = new Producto("P001", "Agua Mineral Litro", 4000.0, 10);
-        Cliente cliente = new Cliente("123456", "Javier Layton", 1000.0, true);
+        Cliente cliente = new Cliente("123456", "Javier Layton", 99000.0, true);
 
         System.out.println("=== ESTADO INICIAL ===");
         System.out.println("Producto: " + agua.getNombre() + " | Stock: " + agua.getCantidad() + " | Precio: $" + agua.getPrecio());
         System.out.println("Cliente: " + cliente.getNombre() + " | Saldo: $" + cliente.getSaldoDisponible());
 
-        // 2. Definimos la compra
+        // 2. Transacción coordinada por Venta
         int cantidadAComprar = 3;
-        double totalAPagar = agua.getPrecio() * cantidadAComprar;
+        Venta venta1 = new Venta("FAC-001", cliente, agua, cantidadAComprar);
 
         System.out.println("\n--- PROCESANDO COMPRA ---");
-        System.out.println("Unidades a comprar: " + cantidadAComprar);
-        System.out.println("Total a pagar: $" + totalAPagar);
+        System.out.println("Factura: " + venta1.getNumeroFactura());
+        System.out.println("Unidades solicitadas: " + venta1.getCantidad());
+        System.out.println("Total a pagar: $" + venta1.getTotal());
 
-        // 3. Ejecutamos los métodos de negocio de cada objeto
-        if (totalAPagar > cliente.getSaldoDisponible()) {
-            System.out.println("No se puede vender: no te alcanza el dinero.");
-        } else {
-            agua.reducirStock(cantidadAComprar);
-            cliente.descontarSaldo(totalAPagar);
-        }
-        System.out.println("\n=== ESTADO FINAL TRAS LA COMPRA ===");
+        // 3. Venta se encarga de TODO el negocio (validar, descontar y proteger)
+        venta1.procesarVenta();
+
+        System.out.println("\n=== ESTADO FINAL ===");
         System.out.println("Stock restante en inventario: " + agua.getCantidad());
         System.out.println("Saldo restante del cliente: $" + cliente.getSaldoDisponible());
     }
