@@ -51,6 +51,16 @@ public class Producto {
 
                     }
                 }
+
+                    public void setCantidad(int nuevaCantidad) {
+                        if (nuevaCantidad >= 0) {
+                            this.cantidad = nuevaCantidad;
+                        } else {
+                            System.out.println("Error: La cantidad en stock no puede ser negativa.");
+                        }
+
+
+                }
     // --- MÉTODOS DE NEGOCIO (son las Acciones)
                 public void  reducirStock( int cantidadVendida) {
                     if (cantidadVendida <= 0) {
