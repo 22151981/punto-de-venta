@@ -1,28 +1,49 @@
 public class Main {
     public static void main(String[] args) {
 
-        // 1. Instancias base
-        Producto agua = new Producto("P001", "Agua Mineral Litro", 4000.0, 10);
-        Cliente cliente = new Cliente("123456", "Javier Layton", 99000.0, true);
+        // 1. CARGA INICIAL DEL SISTEMA
+        // Creamos la bodega central de la tienda
+        Inventario inventario = new Inventario();
 
-        System.out.println("=== ESTADO INICIAL ===");
-        System.out.println("Producto: " + agua.getNombre() + " | Stock: " + agua.getCantidad() + " | Precio: $" + agua.getPrecio());
-        System.out.println("Cliente: " + cliente.getNombre() + " | Saldo: $" + cliente.getSaldoDisponible());
+        // Registramos productos en el catálogo central
+        inventario.registrarProducto(new Producto("P001", "Agua Mineral Litro", 4000.0, 10));
+        inventario.registrarProducto(new Producto("P002", "Galletas Festival", 1500.0, 20));
+        inventario.registrarProducto(new Producto("P003", "Jugo Hit Mora", 3200.0, 5));
 
-        // 2. Transacción coordinada por Venta
-        int cantidadAComprar = 3;
-        Venta venta1 = new Venta("FAC-001", cliente, agua, cantidadAComprar);
+        // Registramos al cliente que se acerca a la caja
+        Cliente javier = new Cliente("123456", "Javier Layton", 50000.0, true);
 
-        System.out.println("\n--- PROCESANDO COMPRA ---");
-        System.out.println("Factura: " + venta1.getNumeroFactura());
-        System.out.println("Unidades solicitadas: " + venta1.getCantidad());
-        System.out.println("Total a pagar: $" + venta1.getTotal());
+        // Mostramos el estado inicial del catálogo
+        inventario.listarProductos();
 
-        // 3. Venta se encarga de TODO el negocio (validar, descontar y proteger)
+        // 2. SIMULACIÓN DE LA COMPRA EN CAJA
+        // El cajero no tiene el producto físico en código; solo recibe un código y una cantidad
+        String codigoBuscado = "P001";
+        int cantidadSolicitada = 3;
+
+        System.out.println("\n--- INICIANDO ATENCIÓN EN CAJA ---");
+        System.out.println("Cliente: " + javier.getNombre());
+        System.out.println("Código consultado: " + codigoBuscado);
+
+        // 3. CONSULTA AL CRUD (READ)
+        Producto productoEncontrado = inventario.buscarPorCodigo(codigoBuscado);
+
+        // Cláusula de guarda: si el producto no existe en bodega, no hay venta
+        if (productoEncontrado == null) {
+            System.out.println("Operación cancelada: El producto con código " + codigoBuscado + " no existe en el sistema.");
+            return;
+        }
+
+        // 4. TRANSACCIÓN MEDIADA
+        // Si existe, le entregamos la referencia del producto encontrado a la Venta
+        Venta venta1 = new Venta("FAC-001", javier, productoEncontrado, cantidadSolicitada);
+
+        // Venta ejecuta sus filtros (stock, saldo, cliente activo) y descuenta
         venta1.procesarVenta();
 
-        System.out.println("\n=== ESTADO FINAL ===");
-        System.out.println("Stock restante en inventario: " + agua.getCantidad());
-        System.out.println("Saldo restante del cliente: $" + cliente.getSaldoDisponible());
+        // 5. COMPROBACIÓN DEL INVENTARIO CENTRAL
+        // Verificamos si la venta modificó el stock real dentro de la lista del inventario
+        System.out.println("\n--- ESTADO DEL INVENTARIO TRAS LA VENTA ---");
+        inventario.listarProductos();
     }
 }

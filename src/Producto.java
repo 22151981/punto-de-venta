@@ -5,6 +5,7 @@ public class Producto {
     private String nombre;
     private double precio;
     private int cantidad;
+    private double costoProveedor; // Costo del producto al que me vende el proveedor
 
     //Constructor (para crear el producto con datos iniciales)
     public Producto( String codigo, String nombre, double precio, int cantidad) {
@@ -42,6 +43,9 @@ public class Producto {
                 }
             }
 
+            public double getCostoProveedor() {
+                return this.costoProveedor;}
+
                 public void setNombre(String nuevoNombre) {
 
                     if (nuevoNombre != null && !nuevoNombre.trim().isEmpty()) {
@@ -58,6 +62,14 @@ public class Producto {
                         } else {
                             System.out.println("Error: La cantidad en stock no puede ser negativa.");
                         }
+                    }
+
+                        public void setCostoProveedor(double nuevoCosto) {
+                            if (nuevoCosto > 0) {
+                                this.costoProveedor = nuevoCosto;
+                            } else {
+                                System.out.println("Error: El costo del proveedor no puede ser negativo.");
+                            }
 
 
                 }
