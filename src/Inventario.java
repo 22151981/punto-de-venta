@@ -10,6 +10,11 @@ public class Inventario {
         this.productos = new ArrayList<>();
     }
 
+    // Getter para que Main pueda listar la colección en ventanas
+    public ArrayList<Producto> getProductos() {
+        return this.productos;
+    }
+
     // ==========================================
     // MÉTODOS CRUD
     // ==========================================
@@ -34,7 +39,7 @@ public class Inventario {
         return null;
     }
 
-    // R - READ (Todos): Lista el catálogo completo
+    // R - READ (Todos): Lista el catálogo completo en consola
     public void listarProductos() {
         System.out.println("=== LISTA DE PRODUCTOS EN INVENTARIO ===");
         if (this.productos.isEmpty()) {
@@ -47,10 +52,19 @@ public class Inventario {
             System.out.println("Código: " + p.getCodigo() +
                     " | Nombre: " + p.getNombre() +
                     " | Precio: $" + p.getPrecio() +
+                    " | Costo: $" + p.getCostoProveedor() +
                     " | Stock: " + p.getCantidad());
         }
         System.out.println("===========================================");
         System.out.println("Total de productos en inventario: " + this.productos.size());
+    }
+
+    public double calcularInversionTotal() {
+        double totalInversion = 0.0;
+        for (Producto p : this.productos) {
+            totalInversion += p.getCostoProveedor() * p.getCantidad();
+        }
+        return totalInversion;
     }
 
     // U - UPDATE: Actualiza precio y stock de un producto existente
@@ -66,16 +80,18 @@ public class Inventario {
         encontrado.setCantidad(nuevoStock);
         System.out.println("Producto " + codigo + " (" + encontrado.getNombre() + ") actualizado correctamente.");
     }
-    // D - DELETE: Elimina un producto por su código
-    public void eliminarProducto(String codigo) {
+
+    // D - DELETE: Elimina un producto por su código retornando true o false
+    public boolean eliminarProducto(String codigo) {
         Producto encontrado = buscarPorCodigo(codigo);
 
         if (encontrado == null) {
             System.out.println("Error: No se puede eliminar. El producto con código " + codigo + " no existe.");
-            return;
+            return false;
         }
 
         this.productos.remove(encontrado);
         System.out.println("Producto " + codigo + " (" + encontrado.getNombre() + ") eliminado del inventario con éxito.");
+        return true;
     }
 }

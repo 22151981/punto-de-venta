@@ -8,11 +8,13 @@ public class Producto {
     private double costoProveedor; // Costo del producto al que me vende el proveedor
 
     //Constructor (para crear el producto con datos iniciales)
-    public Producto( String codigo, String nombre, double precio, int cantidad) {
+    public Producto( String codigo, String nombre, double precio, int cantidad, double costoProveedor) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.precio = precio;
         this.cantidad = cantidad;
+        this.costoProveedor = costoProveedor;
+
     }
 
     //Getters y Setters (leer y cambiar datos)
@@ -46,6 +48,7 @@ public class Producto {
             public double getCostoProveedor() {
                 return this.costoProveedor;}
 
+
                 public void setNombre(String nuevoNombre) {
 
                     if (nuevoNombre != null && !nuevoNombre.trim().isEmpty()) {
@@ -70,9 +73,8 @@ public class Producto {
                             } else {
                                 System.out.println("Error: El costo del proveedor no puede ser negativo.");
                             }
+                        }
 
-
-                }
     // --- MÉTODOS DE NEGOCIO (son las Acciones)
                 public void  reducirStock( int cantidadVendida) {
                     if (cantidadVendida <= 0) {
@@ -88,6 +90,12 @@ public class Producto {
                         }
 
                     }
+
+    public double calcularGananciaUnitaria() {
+        double ganancia = this.precio - this.costoProveedor;
+        System.out.println("Ganancia unitaria de " + this.nombre + ": $" + ganancia);
+        return ganancia;
+    }
 
     }
 

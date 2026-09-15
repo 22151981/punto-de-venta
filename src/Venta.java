@@ -5,6 +5,7 @@ public class Venta {
     private Producto producto;
     private int cantidad;
     private double total;
+    private double gananciaTotal;
 
     public Venta(String numeroFactura, Cliente cliente, Producto producto, int cantidad) {
         this.numeroFactura = numeroFactura;
@@ -12,6 +13,7 @@ public class Venta {
         this.producto = producto;
         this.cantidad = cantidad;
         this.total = producto.getPrecio() * cantidad;
+        this.gananciaTotal = producto.calcularGananciaUnitaria() * cantidad;
     }
 
     public String getNumeroFactura() {
@@ -32,6 +34,10 @@ public class Venta {
 
     public double getTotal() {
         return this.total;
+    }
+
+    public double getGananciaTotal() {
+        return this.gananciaTotal;
     }
 
 public void procesarVenta() {
