@@ -6,6 +6,8 @@ public class Venta {
     private int cantidad;
     private double total;
     private double gananciaTotal;
+    private double efectivoRecibido;
+    private double cambio;
 
     public Venta(String numeroFactura, Cliente cliente, Producto producto, int cantidad) {
         this.numeroFactura = numeroFactura;
@@ -40,33 +42,43 @@ public class Venta {
         return this.gananciaTotal;
     }
 
-public void procesarVenta() {
+    public double getEfectivoRecibido() {
+        return this.efectivoRecibido;
+    }
 
-        if ( !this.cliente.getActivo()) {
+    public double getCambio() {
+        return this.cambio;
+    }
+
+    // Calcula el cambio y valida si el billete o dinero alcanza
+    public double calcularCambio(double efectivoRecibido) {
+        if (efectivoRecibido < this.total) {
+            System.out.println("Error: El efectivo recibido ($" + efectivoRecibido + ") no cubre el total ($" + this.total + ").");
+            return -1;
+        }
+        this.efectivoRecibido = efectivoRecibido;
+        this.cambio = efectivoRecibido - this.total;
+        System.out.println("Cambio a devolver: $" + this.cambio);
+        return this.cambio;
+    }
+
+    public void procesarVenta() {
+        if (!this.cliente.getActivo()) {
             System.out.println("No se puede realizar la venta: cliente inactivo.");
             return;
         }
         if (this.cantidad <= 0) {
-        System.out.println("No se puede realizar la venta: cantidad inválida.");
-        return;
-    }
+            System.out.println("No se puede realizar la venta: cantidad inválida.");
+            return;
+        }
         if (this.producto.getCantidad() < this.cantidad) {
-        System.out.println("No se puede realizar la venta: stock insuficiente.");
-        return;
-    }
-        if (this.cliente.getSaldoDisponible() < this.total) {
-            System.out.println("No se puede realizar la venta: saldo insuficiente.");
+            System.out.println("No se puede realizar la venta: stock insuficiente.");
             return;
         }
 
-//transaccion exitosa, se descuenta el stock y el saldo del cliente
+        // Transacción exitosa: se descuenta el stock en bodega
         this.producto.reducirStock(this.cantidad);
-        this.cliente.descontarSaldo(this.total);
-        System.out.println("Venta procesada exitosamente. Total a pagar: $" + this.total);
-
-    // Mensaje de despedida al cliente
-    System.out.println("¡Gracias por su compra, " + this.cliente.getNombre() + "! Que vuelva pronto, feliz día.");
-
+        System.out.println("Venta procesada exitosamente. Factura: " + this.numeroFactura);
+        System.out.println("¡Gracias por su compra, " + this.cliente.getNombre() + "! Que vuelva pronto, feliz día.");
     }
-
 }

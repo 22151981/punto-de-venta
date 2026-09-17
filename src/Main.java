@@ -142,53 +142,129 @@ public class Main {
                     break;
 
                 case "7":
-                    // ATENDER VENTA EN CAJA
-                    String docBuscar = JOptionPane.showInputDialog("Ingrese cédula del cliente que va a comprar:");
-                    Cliente clienteVenta = null;
+                    // ATENDER VENTA EN CAJA - CARRITO MULTI-PRODUCTO
+                    try {
+                        // 1. Identificación del cliente
+                        String docBuscar = JOptionPane.showInputDialog("Cédula del cliente (deje en blanco para Consumidor Final):");
+                        Cliente clienteVenta = new Cliente("222222222222", "Consumidor Final", 0.0, true);
 
-                    for (Cliente c : listaClientes) {
-                        // Si en Cliente.java usas getCedula() o getDocumento(), aquí se evalúa:
-                        if (c.getCedula().equals(docBuscar)) {
-                            clienteVenta = c;
+                        if (docBuscar != null && !docBuscar.trim().isEmpty()) {
+                            for (Cliente c : listaClientes) {
+                                if (c.getCedula().equalsIgnoreCase(docBuscar.trim())) {
+                                    clienteVenta = c;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // 2. Carrito temporal de compras
+                        ArrayList<ItemVenta> carrito = new ArrayList<>();
+                        boolean seguirComprando = true;
+
+                        do {
+                            String codVenta = JOptionPane.showInputDialog("--- CAJA: CARRITO DE COMPRAS ---\n"
+                                    + "Cliente: " + clienteVenta.getNombre() + "\n"
+                                    + "Productos en carrito: " + carrito.size() + "\n\n"
+                                    + "Ingrese CÓDIGO o NOMBRE del producto:");
+
+                            if (codVenta == null || codVenta.trim().isEmpty()) {
+                                break;
+                            }
+
+                            // Búsqueda por código o coincidencia en nombre
+                            Producto pVenta = inventario.buscarPorCodigo(codVenta.trim());
+                            if (pVenta == null) {
+                                for (Producto p : inventario.getProductos()) {
+                                    if (p.getNombre().toLowerCase().contains(codVenta.trim().toLowerCase())) {
+                                        pVenta = p;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (pVenta == null) {
+                                JOptionPane.showMessageDialog(null, "Producto no encontrado en inventario.", "Error", JOptionPane.ERROR_MESSAGE);
+                            } else {
+                                int cantPedida = Integer.parseInt(JOptionPane.showInputDialog("Producto: " + pVenta.getNombre()
+                                        + "\nPrecio: $" + pVenta.getPrecio()
+                                        + "\nStock Disponible: " + pVenta.getCantidad()
+                                        + "\n\n¿Cuántas unidades lleva?"));
+
+                                // Validar que la cantidad pedida (más lo que ya tenga en carrito) no supere el stock
+                                int yaEnCarrito = 0;
+                                for (ItemVenta item : carrito) {
+                                    if (item.getProducto().getCodigo().equals(pVenta.getCodigo())) {
+                                        yaEnCarrito += item.getCantidad();
+                                    }
+                                }
+
+                                if (cantPedida <= 0) {
+                                    JOptionPane.showMessageDialog(null, "Cantidad inválida.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                                } else if ((yaEnCarrito + cantPedida) > pVenta.getCantidad()) {
+                                    JOptionPane.showMessageDialog(null, "Stock insuficiente. Máximo disponible: " + (pVenta.getCantidad() - yaEnCarrito), "Aviso", JOptionPane.WARNING_MESSAGE);
+                                } else {
+                                    carrito.add(new ItemVenta(pVenta, cantPedida));
+                                    JOptionPane.showMessageDialog(null, cantPedida + "x " + pVenta.getNombre() + " agregado(s) al carrito.");
+                                }
+                            }
+
+                            int respuesta = JOptionPane.showConfirmDialog(null, "¿Desea registrar otro producto para este cliente?", "Seguir comprando", JOptionPane.YES_NO_OPTION);
+                            seguirComprando = (respuesta == JOptionPane.YES_OPTION);
+
+                        } while (seguirComprando);
+
+                        // Si no agregó nada, cancelamos
+                        if (carrito.isEmpty()) {
+                            JOptionPane.showMessageDialog(null, "Venta cancelada: No se ingresaron productos al carrito.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
                             break;
                         }
-                    }
 
-                    if (clienteVenta == null) {
-                        JOptionPane.showMessageDialog(null, "Cliente no encontrado. Regístrelo primero en la opción 6.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                        break;
-                    }
+                        // 3. Cálculo del total general
+                        double totalFactura = 0.0;
+                        String cuerpoFactura = "";
+                        for (ItemVenta item : carrito) {
+                            totalFactura += item.getSubtotal();
+                            cuerpoFactura += item.getProducto().getNombre() + " x" + item.getCantidad() + " = $" + item.getSubtotal() + "\n";
+                        }
 
-                    String codVenta = JOptionPane.showInputDialog("--- CAJA REGISTRADORA ---\nCliente: " + clienteVenta.getNombre() + "\nIngrese código del producto:");
-                    Producto pVenta = inventario.buscarPorCodigo(codVenta);
+                        // 4. Cobro en efectivo y cambio
+                        double efectivo = Double.parseDouble(JOptionPane.showInputDialog("===== LIQUIDACIÓN DE CUENTA =====\n\n"
+                                + cuerpoFactura
+                                + "-----------------------------------------\n"
+                                + "TOTAL A PAGAR: $" + totalFactura + "\n\n"
+                                + "Ingrese dinero recibido en efectivo:"));
 
-                    if (pVenta == null) {
-                        JOptionPane.showMessageDialog(null, "El producto no existe en bodega.", "Error", JOptionPane.ERROR_MESSAGE);
-                        break;
-                    }
+                        if (efectivo < totalFactura) {
+                            JOptionPane.showMessageDialog(null, "Pago incompleto. El efectivo ($" + efectivo + ") no alcanza. Faltan $" + (totalFactura - efectivo), "Venta Cancelada", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            // Transacción exitosa: descontamos stock real de cada producto vendido
+                            for (ItemVenta item : carrito) {
+                                item.getProducto().reducirStock(item.getCantidad());
+                            }
 
-                    try {
-                        int cantVenta = Integer.parseInt(JOptionPane.showInputDialog("Producto: " + pVenta.getNombre()
-                                + "\nPrecio Unitario: $" + pVenta.getPrecio()
-                                + "\nStock Disponible: " + pVenta.getCantidad()
-                                + "\n\n¿Cuántas unidades desea comprar?"));
+                            double cambio = efectivo - totalFactura;
+                            String numFactura = "FAC-" + String.format("%03d", consecutivoFactura++);
 
-                        String numFactura = "FAC-" + String.format("%03d", consecutivoFactura);
-                        Venta venta = new Venta(numFactura, clienteVenta, pVenta, cantVenta);
-                        venta.procesarVenta();
-                        consecutivoFactura++;
+                            String tirilla = "=========================================\n"
+                                    + "               FACTURA DE VENTA\n"
+                                    + "=========================================\n"
+                                    + "No. Factura: " + numFactura + "\n"
+                                    + "Cliente: " + clienteVenta.getNombre() + " (" + clienteVenta.getCedula() + ")\n"
+                                    + "-----------------------------------------\n"
+                                    + cuerpoFactura
+                                    + "-----------------------------------------\n"
+                                    + "TOTAL:              $" + totalFactura + "\n"
+                                    + "Efectivo Recibido:  $" + efectivo + "\n"
+                                    + "CAMBIO (VUELTAS):   $" + cambio + "\n"
+                                    + "-----------------------------------------\n"
+                                    + "¡Gracias por su compra! Vuelva pronto.\n"
+                                    + "=========================================";
 
-                        String resumen = "=== FACTURA GENERADA: " + numFactura + " ===\n"
-                                + "Cliente: " + clienteVenta.getNombre() + "\n"
-                                + "Producto: " + pVenta.getNombre() + "\n"
-                                + "Unidades: " + cantVenta + "\n"
-                                + "Total Pagado: $" + venta.getTotal() + "\n"
-                                + "Stock Restante: " + pVenta.getCantidad() + "\n"
-                                + "Saldo Restante Cliente: $" + clienteVenta.getSaldoDisponible();
+                            JOptionPane.showMessageDialog(null, tirilla, "Recibo Generado", JOptionPane.INFORMATION_MESSAGE);
+                        }
 
-                        JOptionPane.showMessageDialog(null, resumen, "Venta Exitosa", JOptionPane.INFORMATION_MESSAGE);
                     } catch (NumberFormatException e) {
-                        JOptionPane.showMessageDialog(null, "Error: Debe ingresar una cantidad entera válida.", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Error: Debe ingresar valores numéricos válidos.", "Dato Erróneo", JOptionPane.ERROR_MESSAGE);
                     }
                     break;
 
