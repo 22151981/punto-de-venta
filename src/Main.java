@@ -166,7 +166,9 @@ public class Main {
                         String nomCliente = JOptionPane.showInputDialog("Ingrese nombre completo:");
                         double saldo = Double.parseDouble(JOptionPane.showInputDialog("Saldo disponible inicial:"));
 
-                        listaClientes.add(new Cliente(docCliente.trim(), nomCliente.trim(), saldo, true));
+                        Cliente nuevoCliente = new Cliente(docCliente.trim(), nomCliente.trim(), saldo, true);
+                        ClienteDAO clienteDAO = new ClienteDAO();
+                        clienteDAO.insertar(nuevoCliente);
                         JOptionPane.showMessageDialog(null, "Cliente " + nomCliente + " registrado exitosamente.");
                     } catch (NumberFormatException e) {
                         JOptionPane.showMessageDialog(null, "Error: Ingrese un valor numérico válido en el saldo.", "Error", JOptionPane.ERROR_MESSAGE);
